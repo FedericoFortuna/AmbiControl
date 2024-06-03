@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">AmbiControl</string>
-    <string name="title">AmbiControl</string>
-    <string name="button">Sensar</string>
+    <string name="titlePrincipal">AmbiControl</string>
+    <string name="buttonIniciar">Iniciar</string>
+    <string name="buttonSensar">Sensar</string>
+    <string name="titleSensando">Valores sensados</string>
+
 </resources>
