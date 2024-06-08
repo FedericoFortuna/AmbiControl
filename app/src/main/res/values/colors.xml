@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gradientStartColor">#FF5733</color>
+    <color name="gradientEndColor">#C70039</color>
+    <color name="buttonNormalColor">#900C3F</color>
+    <color name="buttonPressedColor">#581845</color>
 </resources>

@@ -4,7 +4,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Button;
 import android.view.View;
@@ -14,6 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.text.DecimalFormat;
 
 public class SensorActivity extends AppCompatActivity implements SensorEventListener {
+    private final static float ACC = 30;
+    private MediaPlayer mplayer;
+
     private TextView sensorData;
     private SensorManager mSensorManager;
     private final DecimalFormat dosDecimales = new DecimalFormat("###.###");
@@ -60,7 +65,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        String txt = "";
+        /*String txt = "";
         synchronized (this) {
             if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
                 txt += "Acelerómetro:\n";
@@ -68,6 +73,17 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
                 txt += "y: " + dosDecimales.format(event.values[1]) + " m/s² \n";
                 txt += "z: " + dosDecimales.format(event.values[2]) + " m/s² \n";
                 sensorData.setText(txt);
+            }
+        }*/
+        int sensorType = event.sensor.getType();
+        float[] values = event.values;
+
+        if (sensorType == Sensor.TYPE_ACCELEROMETER)
+        {
+            if ((Math.abs(values[0]) > ACC || Math.abs(values[1]) > ACC || Math.abs(values[2]) > ACC))
+            {
+                Log.i("sensor", "running");
+                mplayer.start();
             }
         }
     }
