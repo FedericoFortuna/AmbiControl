@@ -27,22 +27,22 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sensor);
-
+        //setContentView(R.layout.activity_sensor);
+        Log.v("hols","hola");
         sensorData = findViewById(R.id.sensor_data);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         Button sensarButton = findViewById(R.id.btnSensar);
-        sensarButton.setOnClickListener(v -> {
-            if (!estaSensando) {
-                empezarSensar();
-                estaSensando = true;
-                sensorData.setVisibility(View.VISIBLE);
-            } else {
-                pararSensar();
-                estaSensando = false;
-            }
-        });
+//        sensarButton.setOnClickListener(v -> {
+//            if (!estaSensando) {
+//                empezarSensar();
+//                estaSensando = true;
+//                sensorData.setVisibility(View.VISIBLE);
+//            } else {
+//                pararSensar();
+//                estaSensando = false;
+//            }
+//        });
     }
     private void empezarSensar() {
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);

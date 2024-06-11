@@ -16,13 +16,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        acelerometro = findViewById(R.id.acelerometro);
         Button iniciar = findViewById(R.id.button3);
 
         iniciar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SensorActivity.class);
+                Intent intent = new Intent(MainActivity.this, ActivityComunication.class);
                 startActivity(intent);
             }
         });
