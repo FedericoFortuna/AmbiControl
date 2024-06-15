@@ -47,13 +47,13 @@ public class ActivityComunication extends Activity {
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int PERMISSION_REQUEST_CODE = 100;
 
-    private ConnectedThread mConnectedThread = new ConnectedThread();
+    private ConnectedThread mConnectedThread;
 
     // SPP UUID service  - Funciona en la mayoria de los dispositivos
     private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     // String for MAC address del Hc05
-    private static String address = null;
+    private static String address = "00:22:06:01:8C:5B";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,6 +196,7 @@ public class ActivityComunication extends Activity {
             showToast("Encender el ventilador");
         }
     };
+
 
 
     private void showToast(String message) {
