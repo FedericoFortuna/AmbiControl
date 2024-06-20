@@ -13,8 +13,6 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +30,7 @@ import java.util.UUID;
 //******************************************** Hilo principal del Activity**************************************
 public class activity_comunicacion extends Activity implements SensorEventListener {
 
-    TextView txtPotenciometro;
+    TextView txtTemperatura;
 
     Handler bluetoothIn;
     final int handlerState = 0; //used to identify handler message
@@ -60,7 +58,7 @@ public class activity_comunicacion extends Activity implements SensorEventListen
         setContentView(R.layout.activity_comunicacion);
 
         //Se definen los componentes del layout
-        txtPotenciometro = (TextView) findViewById(R.id.txtValorPotenciometro);
+        txtTemperatura = (TextView) findViewById(R.id.idValorSensorTemperatura);
 
         //obtengo el adaptador del bluethoot
         btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -146,13 +144,13 @@ public class activity_comunicacion extends Activity implements SensorEventListen
                 if (msg.what == handlerState) {
                     //voy concatenando el msj
                     String readMessage = (String) msg.obj;
-                    recDataString.append(readMessage);
+                    recDataString.append(readMessage).append("\r\n");
                     int endOfLineIndex = recDataString.indexOf("\r\n");
 
                     //cuando recibo toda una linea la muestro en el layout
                     if (endOfLineIndex > 0) {
                         String dataInPrint = recDataString.substring(0, endOfLineIndex);
-                        txtPotenciometro.setText(dataInPrint);
+                        txtTemperatura.setText(dataInPrint);
 
                         recDataString.delete(0, recDataString.length());
                     }
@@ -161,13 +159,6 @@ public class activity_comunicacion extends Activity implements SensorEventListen
         };
 
     }
-
-    //Listener del boton encender que envia  msj para enceder Led a Arduino atraves del Bluethoot
-
-
-    //Listener del boton encender que envia  msj para Apagar Led a Arduino atraves del Bluethoot
-
-
 
     private void showToast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();

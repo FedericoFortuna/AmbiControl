@@ -336,14 +336,12 @@ public class MainActivity extends Activity
 		switch (requestCode) {
 			case MULTIPLE_PERMISSIONS: {
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-					// permissions granted.
-					enableComponent(); // Now you call here what ever you want :)
+					enableComponent();
 				} else {
 					String perStr = "";
 					for (String per : permissions) {
 						perStr += "\n" + per;
 					}
-					// permissions list of don't granted permission
 					Toast.makeText(this,"ATENCION: La aplicacion no funcionara " +
 									"correctamente debido a la falta de Permisos", Toast.LENGTH_LONG).show();
 				}

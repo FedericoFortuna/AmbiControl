@@ -12,21 +12,23 @@ android:paddingTop="@dimen/activity_vertical_margin"
 tools:context="com.example.bluetooth.activity_comunicacion"
 android:theme="@style/AppTheme">
 
-    <EditText
-        android:id="@+id/txtValorPotenciometro"
+    <TextView
+        android:id="@+id/idSensorTemperatura"
         android:layout_width="wrap_content"
-        android:layout_height="364dp"
-        android:layout_above="@+id/btnApagar"
-        android:layout_marginBottom="185dp"
-        android:ems="10"
-        android:fontFamily="serif"
-        android:freezesText="false"
-        android:inputType="textPersonName"
-        android:text="0"
-        android:textAlignment="center"
-        android:textColor="@android:color/holo_red_light"
-        android:textSize="50sp"
-        android:textStyle="normal|bold"
-        tools:ignore="HardcodedText" />
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="39dp"
+        android:text="Sensor Temperatura" />
 
+    <TextView
+        android:id="@+id/idValorSensorTemperatura"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="49dp"
+        android:layout_marginTop="112dp"
+        android:text="ValorSensorTemperatura" />
 </RelativeLayout>

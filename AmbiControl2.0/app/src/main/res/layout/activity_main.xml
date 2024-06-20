@@ -34,6 +34,8 @@
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/pixelcut_export" />
+        android:visibility="visible"
+        app:srcCompat="@drawable/pixelcut_export"
+        tools:visibility="visible" />
 
 </LinearLayout>
