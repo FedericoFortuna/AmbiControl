@@ -8,31 +8,36 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 
 public class BluetoothHelper {
 
+    private static BluetoothHelper instance;
     private BluetoothAdapter bluetoothAdapter;
     private Context context;
     private BluetoothSocket bluetoothSocket;
     private static final String TAG = "BluetoothHelper";
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // UUID for SPP
 
-    public BluetoothHelper(Context context) {
-        this.context = context;
-        BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+    // Private constructor to prevent instantiation from other classes
+    private BluetoothHelper(Context context) {
+        this.context = context.getApplicationContext();
+        BluetoothManager bluetoothManager = (BluetoothManager) this.context.getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
+    }
+
+    // Public method to provide access to the instance
+    public static synchronized BluetoothHelper getInstance(Context context) {
+        if (instance == null) {
+            instance = new BluetoothHelper(context);
+        }
+        return instance;
     }
 
     public void getConnectedDevice(BluetoothDeviceCallback callback) {
@@ -66,7 +71,7 @@ public class BluetoothHelper {
     private boolean isConnected(BluetoothDevice device) {
         try {
             // Usar reflexión para acceder a un método oculto en la API de BluetoothDevice
-            java.lang.reflect.Method method = device.getClass().getMethod("isConnected");
+            Method method = device.getClass().getMethod("isConnected");
             return (boolean) method.invoke(device);
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,36 +80,29 @@ public class BluetoothHelper {
     }
 
     public boolean sendData(String data) {
-        Log.v("hols", "data enviada bt helper");
         if (bluetoothSocket == null) {
             return false;
         }
-        Log.v("hols", "data enviada bt helper2");
         try {
             byte[] msgBuffer = data.getBytes();
             OutputStream outputStream = bluetoothSocket.getOutputStream();
             outputStream.write(msgBuffer);
             return true;
         } catch (IOException e) {
-            Log.v("ASDASDASDASD", "Error while sending data");
+            Log.e(TAG, "Error while sending data", e);
             return false;
         }
     }
-
-
-
 
     public boolean connect(BluetoothDevice device) {
         if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             return false;
         }
 
-
         try {
             Log.d(TAG, "Creating socket with UUID: " + MY_UUID.toString());
             bluetoothAdapter.cancelDiscovery();
             bluetoothSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
-            //bluetoothSocket = device.createInsecureRfcommSocketToServiceRecord(MY_UUID);
             Log.d(TAG, "Connecting to socket...");
 
             bluetoothSocket.connect();
@@ -127,6 +125,17 @@ public class BluetoothHelper {
         }
     }
 
+    public void closeConnection() {
+        try {
+            if (bluetoothSocket != null) {
+                bluetoothSocket.close();
+                bluetoothSocket = null;
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Error while closing connection", e);
+        }
+    }
+
     private void closeSocket() {
         if (bluetoothSocket != null) {
             try {
@@ -137,25 +146,10 @@ public class BluetoothHelper {
             }
         }
     }
-    public void closeConnection() {
-        try {
-            if (bluetoothSocket != null) {
-                bluetoothSocket.close();
-                bluetoothSocket = null;
-            }
-        } catch (IOException e) {
-            Log.v("ASDASDASDASD", "Error while closing connection");
-        }
-    }
-
-    /*private BluetoothSocket createRfcommSocket(BluetoothDevice device) throws Exception {
-        Method m = device.getClass().getMethod("createRfcommSocket", new Class[] { int.class });
-        return (BluetoothSocket) m.invoke(device, 1);
-    }*/
 
     private BluetoothSocket createRfcommSocket(BluetoothDevice device) throws IOException {
         try {
-            Method m = device.getClass().getMethod("createRfcommSocket", new Class[] { int.class });
+            Method m = device.getClass().getMethod("createRfcommSocket", int.class);
             return (BluetoothSocket) m.invoke(device, 1);
         } catch (Exception e) {
             Log.e(TAG, "Could not create fallback socket", e);

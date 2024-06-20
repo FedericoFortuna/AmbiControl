@@ -40,7 +40,8 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        bluetoothHelper = new BluetoothHelper(this);
+        // Obtener la instancia del Singleton
+        bluetoothHelper = BluetoothHelper.getInstance(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensor);
         Log.v("hols","hola");
