@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,7 +45,7 @@ public class MainActivity extends Activity
 	private Button btnActivar;
 	private Button btnEmparejar;
 	private Button btnBuscar;
-
+	private ImageView vistaImagen;
 	private ProgressDialog mProgressDlg;
 
 	private ArrayList<BluetoothDevice> mDeviceList = new ArrayList<BluetoothDevice>();
@@ -79,6 +80,7 @@ public class MainActivity extends Activity
 		txtEstado = (TextView) findViewById(R.id.txtEstado);
 		btnActivar = (Button) findViewById(R.id.btnActivar);
 		btnEmparejar = (Button) findViewById(R.id.btnEmparejar);
+		vistaImagen = (ImageView)findViewById(R.id.imageView);
 
 		//Se crea un adaptador para podermanejar el bluethoot del celular
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

@@ -34,7 +34,6 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
     Handler bluetoothIn;
     final int handlerState = 0; //used to identify handler message
-
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private final StringBuilder recDataString = new StringBuilder();
@@ -64,10 +63,8 @@ public class activity_comunicacion extends Activity implements SensorEventListen
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         //defino el Handler de comunicacion entre el hilo Principal  el secundario.
-        //El hilo secundario va a mostrar informacion al layout atraves utilizando indeirectamente a este handler
+        //El hilo secundario va a mostrar informacion al layout atraves utilizando indirectamente a este handler
         bluetoothIn = Handler_Msg_Hilo_Principal();
-
-        //defino los handlers para los botones Apagar y encender
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -104,8 +101,7 @@ public class activity_comunicacion extends Activity implements SensorEventListen
                 //insert code to deal with this
             }
         }
-
-        //Una establecida la conexion con el Hc05 se crea el hilo secundario, el cual va a recibir
+        //Una vez establecida la conexion con el Hc05 se crea el hilo secundario, el cual va a recibir
         // los datos de Arduino atraves del bluethoot
         mConnectedThread = new ConnectedThread(btSocket);
         mConnectedThread.start();
@@ -117,7 +113,7 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
 
     @Override
-    //Cuando se ejecuta el evento onPause se cierra el socket Bluethoot, para no recibiendo datos
+    //Cuando se ejecuta el evento onPause se cierra el socket Bluethoot, para no estar recibiendo datos
     public void onPause() {
         super.onPause();
         mSensorManager.unregisterListener(this);
