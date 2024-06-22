@@ -13,6 +13,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.NotificationChannel;
@@ -26,9 +27,13 @@ import androidx.core.app.NotificationCompat;
 
 import androidx.annotation.NonNull;
 
+import com.example.bluetooth.utils.Constants;
+import com.example.bluetooth.utils.StateMessage;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.UUID;
 
 /*********************************************************************************************************
@@ -42,7 +47,7 @@ public class activity_comunicacion extends Activity implements SensorEventListen
     TextView txtEstadoActual;
 
     Handler bluetoothIn;
-    final int handlerState = 0; //used to identify handler message
+    final int handlerState = 0;
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private final StringBuilder recDataString = new StringBuilder();
@@ -62,6 +67,8 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
     private static final String CHANNEL_ID = "sensor_notification_channel";
     private static final int NOTIFICATION_ID = 1;
+
+    private StateMessage sm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +128,7 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
         //I send a character when resuming.beginning transmission to check device is connected
         //If it is not an exception will be thrown in the write method and finish() will be called
-        mConnectedThread.write("x");
+        mConnectedThread.write(Constants.TEXT_TEST_CONNECTION);
     }
 
 
@@ -149,6 +156,9 @@ public class activity_comunicacion extends Activity implements SensorEventListen
     private Handler Handler_Msg_Hilo_Principal() {
         return new Handler(Looper.getMainLooper()) {
             public void handleMessage(@NonNull android.os.Message msg) {
+
+                sm = StateMessage.getInstance();
+
                 //si se recibio un msj del hilo secundario
                 if (msg.what == handlerState) {
                     //voy concatenando el msj
@@ -163,11 +173,11 @@ public class activity_comunicacion extends Activity implements SensorEventListen
                         // Asignar las partes a variables
                         int numEstadoActual = Integer.parseInt(parts[0]);
                         int valSensTemp = Integer.parseInt(parts[1]);
-                        //String dataInPrint = recDataString.substring(0, endOfLineIndex);
-                        txtTemperatura.setText(String.valueOf(valSensTemp));
-                        txtEstadoActual.setText(String.valueOf(numEstadoActual));
 
-                        if (numEstadoActual == 5) {
+                        txtTemperatura.setText(String.valueOf(valSensTemp));
+                        txtEstadoActual.setText(sm.getValue(numEstadoActual));
+
+                        if (numEstadoActual == Constants.CODE_VENTILANDO_POR_BT) {
                             sendNotification();
                         }
 
