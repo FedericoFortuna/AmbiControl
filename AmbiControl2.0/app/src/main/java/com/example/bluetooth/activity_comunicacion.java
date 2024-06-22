@@ -21,6 +21,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+
 import androidx.core.app.NotificationCompat;
 
 import androidx.annotation.NonNull;
@@ -223,13 +224,13 @@ public class activity_comunicacion extends Activity implements SensorEventListen
         if (sensorType == Sensor.TYPE_ACCELEROMETER) {
             if ((Math.abs(values[0]) > ACC || Math.abs(values[1]) > ACC || Math.abs(values[2]) > ACC)) {
 
-                    if (!ventiladorPrendido) {
-                        encender();
-                        ventiladorPrendido = true;
-                    } else {
-                        apagar();
-                        ventiladorPrendido = false;
-                    }
+                if (!ventiladorPrendido) {
+                    encender();
+                    ventiladorPrendido = true;
+                } else {
+                    apagar();
+                    ventiladorPrendido = false;
+                }
             }
         }
 
