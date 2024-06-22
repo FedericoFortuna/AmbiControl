@@ -15,6 +15,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
+import androidx.core.app.NotificationCompat;
 
 import androidx.annotation.NonNull;
 
@@ -31,6 +38,7 @@ import java.util.UUID;
 public class activity_comunicacion extends Activity implements SensorEventListener {
 
     TextView txtTemperatura;
+    TextView txtEstadoActual;
 
     Handler bluetoothIn;
     final int handlerState = 0; //used to identify handler message
@@ -51,6 +59,9 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
     private boolean ventiladorPrendido;
 
+    private static final String CHANNEL_ID = "sensor_notification_channel";
+    private static final int NOTIFICATION_ID = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +69,7 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
         //Se definen los componentes del layout
         txtTemperatura = (TextView) findViewById(R.id.idValorSensorTemperatura);
+        txtEstadoActual = (TextView) findViewById(R.id.idEstadoActual);
 
         //obtengo el adaptador del bluethoot
         btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -145,8 +157,18 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
                     //cuando recibo toda una linea la muestro en el layout
                     if (endOfLineIndex > 0) {
-                        String dataInPrint = recDataString.substring(0, endOfLineIndex);
-                        txtTemperatura.setText(dataInPrint);
+                        String[] parts = readMessage.split("\\|");
+
+                        // Asignar las partes a variables
+                        int numEstadoActual = Integer.parseInt(parts[0]);
+                        int valSensTemp = Integer.parseInt(parts[1]);
+                        //String dataInPrint = recDataString.substring(0, endOfLineIndex);
+                        txtTemperatura.setText(String.valueOf(valSensTemp));
+                        txtEstadoActual.setText(String.valueOf(numEstadoActual));
+
+                        if (numEstadoActual == 5) {
+                            sendNotification();
+                        }
 
                         recDataString.delete(0, recDataString.length());
                     }
@@ -154,6 +176,36 @@ public class activity_comunicacion extends Activity implements SensorEventListen
             }
         };
 
+    }
+
+    private void sendNotification() {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Crear el canal de notificación para API 26+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Sensor Notification";
+            String description = "Gas alto detectado";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        // Crear la notificación
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.pixelcut_export) // Debes tener un icono en tu proyecto
+                .setContentTitle("Alerta de Gas Alto")
+                .setContentText("Gas alto detectado")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        // Crear el PendingIntent para abrir la aplicación al hacer clic en la notificación
+        Intent intent = new Intent(this, MainActivity.class); // Cambia MainActivity por la actividad que quieras abrir
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        builder.setContentIntent(pendingIntent);
+
+        // Mostrar la notificación
+        notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
     private void showToast(String message) {
@@ -249,12 +301,12 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
     private void encender() {
         mConnectedThread.write("e");
-        showToast("Encender el LED");
+        showToast("Encendiendo ventilador por shake");
     }
 
     private void apagar() {
         mConnectedThread.write("a");
-        showToast("Apagar el LED");
+        showToast("Apagando ventilador por shake");
     }
 
 }

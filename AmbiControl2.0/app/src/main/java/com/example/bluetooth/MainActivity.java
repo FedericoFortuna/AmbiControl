@@ -38,7 +38,7 @@ import androidx.core.content.ContextCompat;
  * Activity Principal de la App. Es la primiera activity que se ejecuta cuando el usuario ingresa a la App
  **********************************************************************************************************/
 
-@RequiresApi(api = Build.VERSION_CODES.S)
+@RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
 public class MainActivity extends Activity
 {
 	private TextView txtEstado;
@@ -66,6 +66,7 @@ public class MainActivity extends Activity
 			Manifest.permission.WRITE_EXTERNAL_STORAGE,
 			Manifest.permission.READ_PHONE_STATE,
 			Manifest.permission.READ_EXTERNAL_STORAGE,
+			Manifest.permission.POST_NOTIFICATIONS,
 	};
 
 
@@ -167,7 +168,7 @@ public class MainActivity extends Activity
 	}
 
 	private void showEnabled() {
-		txtEstado.setText("Bluetooth Habilitar");
+		txtEstado.setText("Bluetooth Habilitado");
 		txtEstado.setTextColor(Color.BLUE);
 
 		btnActivar.setText("Desactivar");
