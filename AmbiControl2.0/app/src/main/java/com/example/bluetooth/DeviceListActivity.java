@@ -17,18 +17,17 @@ import android.content.IntentFilter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-/*********************************************************************************************************
- * Activity que muestra el listado de los dispositivos bluethoot encontrados
- **********************************************************************************************************/
 
-public class DeviceListActivity extends Activity {
+public class DeviceListActivity extends Activity
+{
     private ListView mListView;
     private DeviceListAdapter mAdapter;
     private ArrayList<BluetoothDevice> mDeviceList;
     private int posicionListBluethoot;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_paired_devices);
@@ -60,49 +59,61 @@ public class DeviceListActivity extends Activity {
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy()
+    {
         unregisterReceiver(mPairReceiver);
 
         super.onDestroy();
     }
 
 
-    private void showToast(String message) {
+    private void showToast(String message)
+    {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
-    private void pairDevice(BluetoothDevice device) {
-        try {
+    private void pairDevice(BluetoothDevice device)
+    {
+        try
+        {
             Method method = device.getClass().getMethod("createBond", (Class[]) null);
             method.invoke(device, (Object[]) null);
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
 
-    private void unpairDevice(BluetoothDevice device) {
-        try {
+    private void unpairDevice(BluetoothDevice device)
+    {
+        try
+        {
             Method method = device.getClass().getMethod("removeBond", (Class[]) null);
             method.invoke(device, (Object[]) null);
 
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
 
     //Metodo que actua como Listener de los eventos que ocurren en los componentes graficos de la activty
-    private DeviceListAdapter.OnPairButtonClickListener listenerBotonEmparejar = new DeviceListAdapter.OnPairButtonClickListener() {
+    private DeviceListAdapter.OnPairButtonClickListener listenerBotonEmparejar = new DeviceListAdapter.OnPairButtonClickListener()
+    {
         @SuppressLint("MissingPermission")
         @Override
-        public void onPairButtonClick(int position) {
+        public void onPairButtonClick(int position)
+        {
             //Obtengo los datos del dispostivo seleccionado del listview por el usuario
             BluetoothDevice device = mDeviceList.get(position);
 
             //Se checkea si el sipositivo ya esta emparejado
-            if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
+            if (device.getBondState() == BluetoothDevice.BOND_BONDED)
+            {
                 //Si esta emparejado,quiere decir que se selecciono desemparjar y entonces se le desempareja
                 unpairDevice(device);
-            } else {
+            } else
+            {
 
                 //Si no esta emparejado,quiere decir que se selecciono emparjar y entonces se le empareja
                 showToast("Emparejando");
@@ -114,20 +125,24 @@ public class DeviceListActivity extends Activity {
     };
 
     //Handler que captura los brodacast que emite el SO al ocurrir los eventos del bluethoot
-    private final BroadcastReceiver mPairReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
+    private final BroadcastReceiver mPairReceiver = new BroadcastReceiver()
+    {
+        public void onReceive(Context context, Intent intent)
+        {
 
             //Atraves del Intent obtengo el evento de Bluethoot que informo el broadcast del SO
             String action = intent.getAction();
 
             //si el SO detecto un emparejamiento o desemparjamiento de bulethoot
-            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action))
+            {
                 //Obtengo los parametro, aplicando un Bundle, que me indica el estado del Bluethoot
                 final int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
                 final int prevState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
 
                 //se analiza si se puedo emparejar o no
-                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
+                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING)
+                {
                     //Si se detecto que se puedo emparejar el bluethoot
                     showToast("Emparejado");
                     BluetoothDevice dispositivo = (BluetoothDevice) mAdapter.getItem(posicionListBluethoot);
@@ -141,7 +156,8 @@ public class DeviceListActivity extends Activity {
                     startActivity(i);
 
                 }  //si se detrecto un desaemparejamiento
-                else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED) {
+                else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED)
+                {
                     showToast("No emparejado");
                 }
 

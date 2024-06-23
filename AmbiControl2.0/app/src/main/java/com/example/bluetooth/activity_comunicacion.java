@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.NotificationChannel;
@@ -33,15 +34,14 @@ import com.example.bluetooth.utils.StateMessage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
-/*********************************************************************************************************
- * Activity que muestra realiza la comunicacion con Arduino
- **********************************************************************************************************/
 
 //******************************************** Hilo principal del Activity**************************************
-public class activity_comunicacion extends Activity implements SensorEventListener {
+public class activity_comunicacion extends Activity implements SensorEventListener
+{
 
     TextView txtTemperatura;
     TextView txtEstadoActual;
@@ -61,7 +61,7 @@ public class activity_comunicacion extends Activity implements SensorEventListen
     private static String address = null;
 
     private SensorManager mSensorManager;
-    private final static float ACC = 30;
+    private final static float ACC = 50;
 
     private boolean ventiladorPrendido;
 
@@ -71,7 +71,8 @@ public class activity_comunicacion extends Activity implements SensorEventListen
     private StateMessage sm;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comunicacion);
 
@@ -94,7 +95,8 @@ public class activity_comunicacion extends Activity implements SensorEventListen
     @Override
     //Cada vez que se detecta el evento OnResume se establece la comunicacion con el HC05, creando un
     //socketBluethoot
-    public void onResume() {
+    public void onResume()
+    {
         super.onResume();
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
         //Obtengo el parametro, aplicando un Bundle, que me indica la Mac Adress del HC05
@@ -106,18 +108,24 @@ public class activity_comunicacion extends Activity implements SensorEventListen
         BluetoothDevice device = btAdapter.getRemoteDevice(address);
 
         //se realiza la conexion del Bluethoot crea y se conectandose a atraves de un socket
-        try {
+        try
+        {
             btSocket = createBluetoothSocket(device);
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             showToast("La creacción del Socket fallo");
         }
         // Establish the Bluetooth socket connection.
-        try {
+        try
+        {
             btSocket.connect();
-        } catch (IOException e) {
-            try {
+        } catch (IOException e)
+        {
+            try
+            {
                 btSocket.close();
-            } catch (IOException e2) {
+            } catch (IOException e2)
+            {
                 //insert code to deal with this
             }
         }
@@ -134,50 +142,60 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
     @Override
     //Cuando se ejecuta el evento onPause se cierra el socket Bluethoot, para no estar recibiendo datos
-    public void onPause() {
+    public void onPause()
+    {
         super.onPause();
         mSensorManager.unregisterListener(this);
-        try {
+        try
+        {
             //Don't leave Bluetooth sockets open when leaving activity
             btSocket.close();
-        } catch (IOException e2) {
+        } catch (IOException e2)
+        {
             //insert code to deal with this
         }
     }
 
     //Metodo que crea el socket bluethoot
     @SuppressLint("MissingPermission")
-    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
+    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException
+    {
 
         return device.createRfcommSocketToServiceRecord(BTMODULEUUID);
     }
 
     //Handler que sirve que permite mostrar datos en el Layout al hilo secundario
-    private Handler Handler_Msg_Hilo_Principal() {
-        return new Handler(Looper.getMainLooper()) {
-            public void handleMessage(@NonNull android.os.Message msg) {
+    private Handler Handler_Msg_Hilo_Principal()
+    {
+        return new Handler(Looper.getMainLooper())
+        {
+            public void handleMessage(@NonNull android.os.Message msg)
+            {
 
                 sm = StateMessage.getInstance();
 
                 //si se recibio un msj del hilo secundario
-                if (msg.what == handlerState) {
+                if (msg.what == handlerState)
+                {
                     //voy concatenando el msj
                     String readMessage = (String) msg.obj;
                     recDataString.append(readMessage).append("\r\n");
                     int endOfLineIndex = recDataString.indexOf("\r\n");
-
                     //cuando recibo toda una linea la muestro en el layout
-                    if (endOfLineIndex > 0) {
+                    if (endOfLineIndex > 0)
+                    {
                         String[] parts = readMessage.split("\\|");
-
                         // Asignar las partes a variables
                         int numEstadoActual = Integer.parseInt(parts[0]);
-                        int valSensTemp = Integer.parseInt(parts[1]);
+                        int valSensTemp = Integer.parseInt(parts[parts.length-1]);
 
-                        txtTemperatura.setText(String.valueOf(valSensTemp));
+                        String valSensTempStr = valSensTemp + " °C";
+
+                        txtTemperatura.setText(valSensTempStr);
                         txtEstadoActual.setText(sm.getValue(numEstadoActual));
 
-                        if (numEstadoActual == Constants.CODE_VENTILANDO_POR_BT) {
+                        if (numEstadoActual == Constants.CODE_ILUMINANDO_Y_VENTILANDO)
+                        {
                             sendNotification();
                         }
 
@@ -189,11 +207,13 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
     }
 
-    private void sendNotification() {
+    private void sendNotification()
+    {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Crear el canal de notificación para API 26+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
             CharSequence name = "Sensor Notification";
             String description = "Gas alto detectado";
             int importance = NotificationManager.IMPORTANCE_HIGH;
@@ -219,25 +239,32 @@ public class activity_comunicacion extends Activity implements SensorEventListen
         notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
-    private void showToast(String message) {
+    private void showToast(String message)
+    {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
+    public void onSensorChanged(SensorEvent event)
+    {
         String txt = "";
-        synchronized (this) {
+        synchronized (this)
+        {
         }
         int sensorType = event.sensor.getType();
         float[] values = event.values;
 
-        if (sensorType == Sensor.TYPE_ACCELEROMETER) {
-            if ((Math.abs(values[0]) > ACC || Math.abs(values[1]) > ACC || Math.abs(values[2]) > ACC)) {
+        if (sensorType == Sensor.TYPE_ACCELEROMETER)
+        {
+            if ((Math.abs(values[0]) > ACC || Math.abs(values[1]) > ACC || Math.abs(values[2]) > ACC))
+            {
 
-                if (!ventiladorPrendido) {
+                if (!ventiladorPrendido)
+                {
                     encender();
                     ventiladorPrendido = true;
-                } else {
+                } else
+                {
                     apagar();
                     ventiladorPrendido = false;
                 }
@@ -247,27 +274,32 @@ public class activity_comunicacion extends Activity implements SensorEventListen
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
+    public void onAccuracyChanged(Sensor sensor, int i)
+    {
 
     }
 
     //******************************************** Hilo secundario del Activity**************************************
     //*************************************** recibe los datos enviados por el HC05**********************************
 
-    private class ConnectedThread extends Thread {
+    private class ConnectedThread extends Thread
+    {
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
 
         //Constructor de la clase del hilo secundario
-        public ConnectedThread(BluetoothSocket socket) {
+        public ConnectedThread(BluetoothSocket socket)
+        {
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
-            try {
+            try
+            {
                 //Create I/O streams for connection
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
             }
 
             mmInStream = tmpIn;
@@ -275,13 +307,16 @@ public class activity_comunicacion extends Activity implements SensorEventListen
         }
 
         //metodo run del hilo, que va a entrar en una espera activa para recibir los msjs del HC05
-        public void run() {
+        public void run()
+        {
             byte[] buffer = new byte[256];
             int bytes;
 
             //el hilo secundario se queda esperando mensajes del HC05
-            while (true) {
-                try {
+            while (true)
+            {
+                try
+                {
                     //se leen los datos del Bluethoot
                     bytes = mmInStream.read(buffer);
                     String readMessage = new String(buffer, 0, bytes);
@@ -289,7 +324,8 @@ public class activity_comunicacion extends Activity implements SensorEventListen
                     //se muestran en el layout de la activity, utilizando el handler del hilo
                     // principal antes mencionado
                     bluetoothIn.obtainMessage(handlerState, bytes, -1, readMessage).sendToTarget();
-                } catch (IOException e) {
+                } catch (IOException e)
+                {
                     break;
                 }
             }
@@ -297,25 +333,29 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
 
         //write method
-        public void write(String input) {
+        public void write(String input)
+        {
             byte[] msgBuffer = input.getBytes();           //converts entered String into bytes
-            try {
+            try
+            {
                 mmOutStream.write(msgBuffer);                //write bytes over BT connection via outstream
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
                 //if you cannot write, close the application
                 showToast("La conexion fallo");
                 finish();
-
             }
         }
     }
 
-    private void encender() {
+    private void encender()
+    {
         mConnectedThread.write("e");
         showToast("Encendiendo ventilador por shake");
     }
 
-    private void apagar() {
+    private void apagar()
+    {
         mConnectedThread.write("a");
         showToast("Apagando ventilador por shake");
     }
