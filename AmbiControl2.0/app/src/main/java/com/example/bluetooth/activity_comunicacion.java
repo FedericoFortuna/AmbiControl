@@ -248,9 +248,6 @@ public class activity_comunicacion extends Activity implements SensorEventListen
     public void onSensorChanged(SensorEvent event)
     {
         String txt = "";
-        synchronized (this)
-        {
-        }
         int sensorType = event.sensor.getType();
         float[] values = event.values;
 
