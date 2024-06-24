@@ -16,5 +16,7 @@ public class Constants {
     public final static Integer CODE_VENTILANDO_POR_BT = 5;
 
     public final static String TEXT_TEST_CONNECTION = "x";
+    public final static String APAGAR_VENTILADOR_BT = "a";
+    public final static String ENCENDER_VENTILADOR_BT = "e";
 
 }
