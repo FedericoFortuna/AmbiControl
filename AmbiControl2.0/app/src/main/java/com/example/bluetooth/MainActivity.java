@@ -97,7 +97,8 @@ public class MainActivity extends Activity
         {
             //si el celular no soporta bluethoot
             showUnsupported();
-        } else
+        } 
+        else
         {
             //si el celular soporta bluethoot, se definen los listener para los botones de la activity
             btnEmparejar.setOnClickListener(btnEmparejarListener);
