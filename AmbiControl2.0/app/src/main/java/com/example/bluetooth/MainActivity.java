@@ -130,15 +130,6 @@ public class MainActivity extends Activity
     //Cuando se llama al metodo OnPausa se cancela la busqueda de dispositivos bluethoot
     public void onPause()
     {
-
-        if (mBluetoothAdapter != null)
-        {
-            if (mBluetoothAdapter.isDiscovering()) 
-            {
-                mBluetoothAdapter.cancelDiscovery();
-            }
-        }
-
         super.onPause();
     }
 
@@ -293,19 +284,6 @@ public class MainActivity extends Activity
 
                 startActivityForResult(intent, 1000);
             }
-        }
-    };
-
-
-    private final DialogInterface.OnClickListener btnCancelarDialogListener = new DialogInterface.OnClickListener()
-    {
-        @SuppressLint("MissingPermission")
-        @Override
-        public void onClick(DialogInterface dialog, int which)
-        {
-            dialog.dismiss();
-
-            mBluetoothAdapter.cancelDiscovery();
         }
     };
 
