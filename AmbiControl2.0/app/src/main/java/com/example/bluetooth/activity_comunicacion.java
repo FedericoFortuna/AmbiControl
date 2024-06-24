@@ -347,13 +347,13 @@ public class activity_comunicacion extends Activity implements SensorEventListen
 
     private void encender()
     {
-        mConnectedThread.write("e");
+        mConnectedThread.write(Constants.ENCENDER_VENTILADOR_BT);
         showToast("Encendiendo ventilador por shake");
     }
 
     private void apagar()
     {
-        mConnectedThread.write("a");
+        mConnectedThread.write(Constants.APAGAR_VENTILADOR_BT);
         showToast("Apagando ventilador por shake");
     }
 
