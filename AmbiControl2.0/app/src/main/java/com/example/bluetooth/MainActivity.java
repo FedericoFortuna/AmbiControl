@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 
@@ -16,127 +14,139 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
 
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-/*********************************************************************************************************
- * Activity Principal de la App. Es la primiera activity que se ejecuta cuando el usuario ingresa a la App
- **********************************************************************************************************/
+import com.example.bluetooth.utils.Constants;
+import com.example.bluetooth.utils.Permissions;
 
 @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
 public class MainActivity extends Activity
 {
-    private TextView txtEstado;
-    private Button btnActivar;
-    private Button btnEmparejar;
+    private TextView txtState;
+    private Button btnActivate;
+    private Button btnPair;
     private ProgressDialog mProgressDlg;
 
-    private ArrayList<BluetoothDevice> mDeviceList = new ArrayList<BluetoothDevice>();
+    private ArrayList<BluetoothDevice> mDeviceList = new ArrayList<>();
 
     private BluetoothAdapter mBluetoothAdapter;
 
     public static final int MULTIPLE_PERMISSIONS = 10;
 
-    //se crea un array de String con los permisos a solicitar en tiempo de ejecucion
-    //Esto se debe realizar a partir de Android 6.0, ya que con verdiones anteriores
-    //con solo solicitarlos en el Manifest es suficiente
-    String[] permissions = new String[]
-            {
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.POST_NOTIFICATIONS,
-    };
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver()
+    {
+        @SuppressLint("MissingPermission")
+        public void onReceive(Context context, Intent intent)
+        {
 
+            String action = intent.getAction();
+
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action))
+            {
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+
+                if (state == BluetoothAdapter.STATE_ON)
+                {
+                    showToast(Constants.ACTIVATE);
+
+                    showEnabled();
+                }
+            }
+            else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action))
+            {
+                mDeviceList = new ArrayList<>();
+
+                mProgressDlg.show();
+            }
+            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
+            {
+                mProgressDlg.dismiss();
+
+                Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
+
+                newIntent.putParcelableArrayListExtra("device.list", mDeviceList);
+
+                startActivity(newIntent);
+            }
+            else if (BluetoothDevice.ACTION_FOUND.equals(action))
+            {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                mDeviceList.add(device);
+                showToast(Constants.FOUNDED_DEVICE + device.getName());
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-
-        //Se definen los componentes del layout
-        txtEstado = (TextView) findViewById(R.id.txtEstado);
-        btnActivar = (Button) findViewById(R.id.btnActivar);
-        btnEmparejar = (Button) findViewById(R.id.btnEmparejar);
-
-        //Se crea un adaptador para podermanejar el bluethoot del celular
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        if (checkPermissions())
+        configureComponents();
+        Permissions permissions = Permissions.getInstance();
+        if (checkPermissions(permissions.getValue()))
         {
             enableComponent();
         }
     }
 
+    private void configureComponents()
+    {
+        txtState = findViewById(R.id.txtEstado);
+        btnActivate = findViewById(R.id.btnActivar);
+        btnPair = findViewById(R.id.btnEmparejar);
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    }
+
     protected void enableComponent()
     {
-        //se determina si existe bluethoot en el celular
         if (mBluetoothAdapter == null)
         {
-            //si el celular no soporta bluethoot
             showUnsupported();
         } 
         else
         {
-            //si el celular soporta bluethoot, se definen los listener para los botones de la activity
-            btnEmparejar.setOnClickListener(btnEmparejarListener);
+            btnPair.setOnClickListener(btnEmparejarListener);
+            btnActivate.setOnClickListener(btnActivarListener);
 
-            btnActivar.setOnClickListener(btnActivarListener);
-
-            //se determina si esta activado el bluethoot
             if (mBluetoothAdapter.isEnabled())
             {
-                //se informa si esta habilitado
                 showEnabled();
             } else
             {
-                //se informa si esta deshabilitado
                 showDisabled();
             }
         }
 
-
-        //se definen un broadcastReceiver que captura el broadcast del SO cuando captura los siguientes eventos:
         IntentFilter filter = new IntentFilter();
-
-        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED); //Cambia el estado del Bluethoot (Acrtivado /Desactivado)
-        //se define (registra) el handler que captura los broadcast anterirmente mencionados.
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReceiver, filter);
     }
 
     @SuppressLint("MissingPermission")
     @Override
-    //Cuando se llama al metodo OnPausa se cancela la busqueda de dispositivos bluethoot
     public void onPause()
     {
         super.onPause();
     }
 
     @Override
-    //Cuando se detruye la Acivity se quita el registro de los brodcast. Apartir de este momento no se
-    //recibe mas broadcast del SO. del bluethoot
     public void onDestroy()
     {
         unregisterReceiver(mReceiver);
@@ -145,34 +155,34 @@ public class MainActivity extends Activity
 
     private void showEnabled()
     {
-        txtEstado.setText("Bluetooth Habilitado");
-        txtEstado.setTextColor(Color.BLUE);
+        txtState.setText(Constants.ACTIVATED_BT);
+        txtState.setTextColor(Color.BLUE);
 
-        btnActivar.setText("Desactivar");
-        btnActivar.setEnabled(true);
+        btnActivate.setText(Constants.DEACTIVATE);
+        btnActivate.setEnabled(true);
 
-        btnEmparejar.setEnabled(true);
+        btnPair.setEnabled(true);
     }
 
     private void showDisabled()
     {
-        txtEstado.setText("Bluetooth Deshabilitado");
-        txtEstado.setTextColor(Color.RED);
+        txtState.setText(Constants.DEACTIVATED_BT);
+        txtState.setTextColor(Color.RED);
 
-        btnActivar.setText("Activar");
-        btnActivar.setEnabled(true);
+        btnActivate.setText(Constants.ACTIVATE);
+        btnActivate.setEnabled(true);
 
-        btnEmparejar.setEnabled(false);
+        btnPair.setEnabled(false);
     }
 
     private void showUnsupported()
     {
-        txtEstado.setText("Bluetooth no es soportado por el dispositivo movil");
+        txtState.setText(Constants.BT_NOT_SUPPORTED);
 
-        btnActivar.setText("Activar");
-        btnActivar.setEnabled(false);
+        btnActivate.setText(Constants.ACTIVATE);
+        btnActivate.setEnabled(false);
 
-        btnEmparejar.setEnabled(false);
+        btnPair.setEnabled(false);
     }
 
     private void showToast(String message)
@@ -180,83 +190,21 @@ public class MainActivity extends Activity
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
-    //Handler que captura los brodacast que emite el SO al ocurrir los eventos del bluethoot
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver()
-    {
-        @SuppressLint("MissingPermission")
-        public void onReceive(Context context, Intent intent)
-        {
 
-            //Atraves del Intent obtengo el evento de Bluethoot que informo el broadcast del SO
-            String action = intent.getAction();
-
-            //Si cambio de estado el Bluethoot(Activado/desactivado)
-            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action))
-            {
-                //Obtengo el parametro, aplicando un Bundle, que me indica el estado del Bluethoot
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-
-                //Si esta activado
-                if (state == BluetoothAdapter.STATE_ON)
-                {
-                    showToast("Activar");
-
-                    showEnabled();
-                }
-            }
-            //Si se inicio la busqueda de dispositivos bluethoot
-            else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action))
-            {
-                //Creo la lista donde voy a mostrar los dispositivos encontrados
-                mDeviceList = new ArrayList<BluetoothDevice>();
-
-                //muestro el cuadro de dialogo de busqueda
-                mProgressDlg.show();
-            }
-            //Si finalizo la busqueda de dispositivos bluethoot
-            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
-            {
-                //se cierra el cuadro de dialogo de busqueda
-                mProgressDlg.dismiss();
-
-                //se inicia el activity DeviceListActivity pasandole como parametros, por intent,
-                //el listado de dispositovos encontrados
-                Intent newIntent = new Intent(MainActivity.this, DeviceListActivity.class);
-
-                newIntent.putParcelableArrayListExtra("device.list", mDeviceList);
-
-                startActivity(newIntent);
-            }
-            //si se encontro un dispositivo bluethoot
-            else if (BluetoothDevice.ACTION_FOUND.equals(action))
-            {
-                //Se lo agregan sus datos a una lista de dispositivos encontrados
-                BluetoothDevice device = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-                mDeviceList.add(device);
-                showToast("Dispositivo Encontrado:" + device.getName());
-            }
-        }
-    };
-
-
-    //Metodo que actua como Listener de los eventos que ocurren en los componentes graficos de la activty
     private final View.OnClickListener btnEmparejarListener = new View.OnClickListener()
     {
         @Override
         public void onClick(View v)
         {
-
-            @SuppressLint("MissingPermission") Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+            @SuppressLint("MissingPermission")
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
             if (pairedDevices == null || pairedDevices.isEmpty())
             {
-                showToast("No se encontraron dispositivos emparejados");
+                showToast(Constants.NOT_PAIRED_DEVICE_FOUNDED);
             } else
             {
-                ArrayList<BluetoothDevice> list = new ArrayList<BluetoothDevice>();
-
-                list.addAll(pairedDevices);
+                ArrayList<BluetoothDevice> list = new ArrayList<>(pairedDevices);
 
                 Intent intent = new Intent(MainActivity.this, DeviceListActivity.class);
 
@@ -283,20 +231,17 @@ public class MainActivity extends Activity
             {
                 Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 
-                startActivityForResult(intent, 1000);
+                startActivityForResult(intent, Constants.REQUEST_CODE);
             }
         }
     };
 
 
-    //Metodo que chequea si estan habilitados los permisos
-    private boolean checkPermissions()
+    private boolean checkPermissions(String[] permissions)
     {
         int result;
         List<String> listPermissionsNeeded = new ArrayList<>();
-
-        //Se chequea si la version de Android es menor a la 6
-
+        boolean permissionsEnabled = true;
 
         for (String p : permissions)
         {
@@ -309,32 +254,23 @@ public class MainActivity extends Activity
         if (!listPermissionsNeeded.isEmpty())
         {
             ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), MULTIPLE_PERMISSIONS);
-            return false;
+            permissionsEnabled = false;
         }
-        return true;
+        return permissionsEnabled;
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
-        switch (requestCode)
+        if (requestCode == MULTIPLE_PERMISSIONS)
         {
-            case MULTIPLE_PERMISSIONS:
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
-                    enableComponent();
-                } else
-                {
-                    String perStr = "";
-                    for (String per : permissions)
-                    {
-                        perStr += "\n" + per;
-                    }
-                    Toast.makeText(this, "ATENCION: La aplicacion no funcionara " +
-                            "correctamente debido a la falta de Permisos", Toast.LENGTH_LONG).show();
-                }
-                return;
+                enableComponent();
+            } else
+            {
+                Toast.makeText(this, "ATENCION: La aplicacion no funcionara " +
+                        "correctamente debido a la falta de Permisos", Toast.LENGTH_LONG).show();
             }
         }
     }
