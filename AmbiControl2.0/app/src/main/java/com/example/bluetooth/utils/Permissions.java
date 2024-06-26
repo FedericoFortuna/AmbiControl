@@ -1,6 +1,9 @@
 package com.example.bluetooth.utils;
 
 import android.Manifest;
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 public class Permissions {
     private static Permissions instance;
@@ -9,7 +12,9 @@ public class Permissions {
     private Permissions()
     {
         permissions = new String[9];
-        configure();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            configure();
+        }
     }
 
     public static synchronized Permissions getInstance() {
@@ -20,6 +25,7 @@ public class Permissions {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void configure()
     {
         permissions =

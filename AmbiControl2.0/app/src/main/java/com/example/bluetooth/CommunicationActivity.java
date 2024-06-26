@@ -290,13 +290,12 @@ public class CommunicationActivity extends Activity implements SensorEventListen
         }
 
 
-        //write method
         public void write(String input)
         {
-            byte[] msgBuffer = input.getBytes();           //converts entered String into bytes
+            byte[] msgBuffer = input.getBytes();
             try
             {
-                mmOutStream.write(msgBuffer);                //write bytes over BT connection via outstream
+                mmOutStream.write(msgBuffer);
             } catch (IOException e)
             {
                 showToast(Constants.FAILED_CONNECTION);
