@@ -52,6 +52,10 @@ SoftwareSerial BT(7,11);    // Definimos los pines RX y TX del Arduino conectado
 #define C 0.0000000876741
 #define CONSTANTE_INV_STEINHART_HART 1
 
+// Comandos BT
+#define ENCENDER_VENTILADOR 'e'
+#define APAGAR_VENTILADOR 'a'
+
 //-----------------------------------------------------
 
 //-----------------------------------------------------
@@ -275,7 +279,7 @@ void procesar()
 void tomar_evento()
 {
 
-    if((verificar_sensor_gas() || estado_actual == ILUMINANDO_Y_VENTILANDO)|| verificar_sensor_temperatura() || verificar_bt() )
+    if(verificar_sensor_gas() || verificar_sensor_temperatura() || verificar_bt() )
        return;    
 }
 
@@ -318,15 +322,15 @@ bool verificar_sensor_gas()
 
 bool verificar_bt()
 {
-  if(BT.available() || estado_actual == VENTILANDO_POR_BT)    // Si llega un dato por el puerto BT se envía al monitor serial
+  if(BT.available())    // Si llega un dato por el puerto BT se envía al monitor serial
   {
     char caracterLeido = BT.read();
-    if( caracterLeido == 'e'){ //si llega un e prendo el ventilador
+    if( caracterLeido == ENCENDER_VENTILADOR){ //si llega un e prendo el ventilador
         Serial.println("PRENDIENDO MOTORES");
         Serial.println("---------------------------------------------");
         evento.tipo = COMANDO_BT_ENCENDIDO;
     }else{
-      if( caracterLeido == 'a' && estado_actual == VENTILANDO_POR_BT){ //si llega una a apago el ventilador
+      if( caracterLeido == APAGAR_VENTILADOR){ //si llega una a apago el ventilador
         Serial.println("APAGANDO MOTORES");
         Serial.println("---------------------------------------------");
         evento.tipo = COMANDO_BT_APAGADO;
