@@ -1,4 +1,3 @@
-//-----------------------------------------------------
 //PINES del sistema
 #define PIN_SENSOR_TEMPERATURA A0
 #define PIN_SENSOR_GAS A3
@@ -9,7 +8,7 @@
 
 #include <stdio.h>
 #include <string.h> 
-#include <SoftwareSerial.h>   // Incluimos la librería  SoftwareSerial  
+#include <SoftwareSerial.h> // Incluimos la librería  SoftwareSerial  
 SoftwareSerial BT(7,11);    // Definimos los pines RX y TX del Arduino conectados al Bluetooth
 
 //ESTADOS del sistema
@@ -56,26 +55,23 @@ SoftwareSerial BT(7,11);    // Definimos los pines RX y TX del Arduino conectado
 #define ENCENDER_VENTILADOR 'e'
 #define APAGAR_VENTILADOR 'a'
 
-//-----------------------------------------------------
-
-//-----------------------------------------------------
 // Estructuras de datos
 struct structSensor
 {
-  int pin;
-  int nivel;
+ int pin;
+ int nivel;
 };
 
 struct structActuador 
 {
-  int pin;
+ int pin;
 };
 
 
 struct structEvento
 {
-  int tipo;
-  int valor;
+ int tipo;
+ int valor;
 };
 
 // Variables Globales del Sistema
@@ -88,41 +84,38 @@ int estado_actual;
 unsigned long tiempo_anterior;
 unsigned long tiempo_actual;
 structEvento evento;
-//-----------------------------------------------------
 
-//-----------------------------------------------------
+
 // Main del Sistema
 void setup()
 {
-  BT.begin(9600);       // Inicializamos el puerto serie BT (Para Modo AT 2)
-  Serial.begin(9600);
+ BT.begin(9600);       // Inicializamos el puerto serie BT (Para Modo AT 2)
+ Serial.begin(9600);
 
-  sensor_gas.pin = PIN_SENSOR_GAS;
-  pinMode(sensor_gas.pin, INPUT);
+ sensor_gas.pin = PIN_SENSOR_GAS;
+ pinMode(sensor_gas.pin, INPUT);
 
-  sensor_temperatura.pin = PIN_SENSOR_TEMPERATURA;
-  pinMode(sensor_temperatura.pin, INPUT); 
+ sensor_temperatura.pin = PIN_SENSOR_TEMPERATURA;
+ pinMode(sensor_temperatura.pin, INPUT); 
   
-  actuador_led.pin = PIN_LED;
-  pinMode(actuador_led.pin, OUTPUT);
+ actuador_led.pin = PIN_LED;
+ pinMode(actuador_led.pin, OUTPUT);
 
-  actuador_ventilador.pin = PIN_VENTILADOR;
-  pinMode(actuador_ventilador.pin, OUTPUT);
+ actuador_ventilador.pin = PIN_VENTILADOR;
+ pinMode(actuador_ventilador.pin, OUTPUT);
 
-  estado_actual = PREPARADO;
-
-  tiempo_anterior = millis();
+ estado_actual = PREPARADO;
+ tiempo_anterior = millis();
 }
 
 void loop()
 {
-  procesar();
+ procesar();
 }
 
 void procesar()
 {
   tiempo_actual = millis(); // Actualizamos el tiempo actual en cada iteración
-
   // Llamamos a tomar_evento() si ha pasado el tiempo de intervalo y hay eventos relevantes
   if ((tiempo_actual - tiempo_anterior) > TMP_EVENTOS_MILI)
   {
@@ -132,155 +125,151 @@ void procesar()
     {
       case PREPARADO:
       {
-          switch (evento.tipo)
+        switch (evento.tipo)
+        {
+          case GAS_DETECTADO:
           {
-              case GAS_DETECTADO:
-              {
-                    gasDetectado(PREPARADO);
-              }
-              break;
-            
-              case TEMPERATURA_ALTA:
-              {
-                  temperaturaAlta(PREPARADO);
-              }
-              break;
-
-              case COMANDO_BT_ENCENDIDO:
-              {
-                    encenderVentiladorBT(PREPARADO);
-              }
-              break;
+            gasDetectado(PREPARADO);
           }
           break;
+              
+          case TEMPERATURA_ALTA:
+          {
+          temperaturaAlta(PREPARADO);
+          }
+          break;
+
+          case COMANDO_BT_ENCENDIDO:
+          {
+            encenderVentiladorBT(PREPARADO);
+          }
+          break;
+        }
+        break;
       }
       break;
 
       case ILUMINANDO_Y_VENTILANDO:
       {
-          switch (evento.tipo)
+        switch (evento.tipo)
+        {
+          case GAS_NO_DETECTADO:
           {
-            case GAS_NO_DETECTADO:
-            {
-                gasNoDetectado(ILUMINANDO_Y_VENTILANDO);
-            }
-            break;
+            gasNoDetectado(ILUMINANDO_Y_VENTILANDO);
           }
-      break;
+          break;
+        }
+        break;
       }
       break;
 
       case DESENERGIZANDO_ACTUADORES:
       {
-          switch (evento.tipo)
+        switch (evento.tipo)
+        {
+          case TEMPERATURA_ALTA:
           {
-            case TEMPERATURA_ALTA:
-            {
-                  temperaturaAlta(DESENERGIZANDO_ACTUADORES);
-            }
-            break;
-
-            case GAS_DETECTADO:
-            {
-                gasDetectado(DESENERGIZANDO_ACTUADORES);
-            }
-            break;
-
-            case COMANDO_BT_ENCENDIDO:
-            {
-                  encenderVentiladorBT(DESENERGIZANDO_ACTUADORES);
-            }
-            break;
+            temperaturaAlta(DESENERGIZANDO_ACTUADORES);
           }
           break;
+
+          case GAS_DETECTADO:
+          {
+            gasDetectado(DESENERGIZANDO_ACTUADORES);
+          }
+          break;
+
+          case COMANDO_BT_ENCENDIDO:
+          {
+            encenderVentiladorBT(DESENERGIZANDO_ACTUADORES);
+          }
+          break;
+        }
+        break;
       }
       break;
 
       case VENTILANDO:
       {
-          switch (evento.tipo)
+        switch (evento.tipo)
+        {
+          case TEMPERATURA_NORMAL:
           {
-            case TEMPERATURA_NORMAL:
-            {
-                  temperaturaNormal(VENTILANDO);
-            }
-            break;
-
-            case GAS_DETECTADO:
-            {
-                gasDetectado(VENTILANDO);
-            }
-            break;
-
-            case COMANDO_BT_ENCENDIDO:
-            {
-                  encenderVentiladorBT(VENTILANDO);
-            }
-            break;
+            temperaturaNormal(VENTILANDO);
           }
           break;
+
+          case GAS_DETECTADO:
+          {
+            gasDetectado(VENTILANDO);
+          }
+          break;
+
+          case COMANDO_BT_ENCENDIDO:
+          {
+            encenderVentiladorBT(VENTILANDO);
+          }
+          break;
+        }
+        break;
       }
       break;
 
       case DESENERGIZANDO_VENTILADORES:
       {
-          switch (evento.tipo)
+        switch (evento.tipo)
+        {
+          case TEMPERATURA_ALTA:
           {
-            case TEMPERATURA_ALTA:
-            {
-                  temperaturaAlta(DESENERGIZANDO_VENTILADORES);
-            }
-            break;
-
-            case GAS_DETECTADO:
-            {
-                gasDetectado(DESENERGIZANDO_VENTILADORES);
-            }
-            break;
-
-            case COMANDO_BT_ENCENDIDO:
-            {
-                encenderVentiladorBT(DESENERGIZANDO_VENTILADORES);
-            }
-            break;
+            temperaturaAlta(DESENERGIZANDO_VENTILADORES);
           }
           break;
+
+          case GAS_DETECTADO:
+          {
+            gasDetectado(DESENERGIZANDO_VENTILADORES);
+          }
+          break;
+
+          case COMANDO_BT_ENCENDIDO:
+          {
+            encenderVentiladorBT(DESENERGIZANDO_VENTILADORES);
+          }
+          break;
+        }
+        break;
       }
       break;
 
       case VENTILANDO_POR_BT:
       {
-          switch (evento.tipo)
+        switch (evento.tipo)
+        {
+          case GAS_DETECTADO:
           {
-            case GAS_DETECTADO:
-            {
-                  gasDetectado(VENTILANDO_POR_BT);
-            }
-            break;
-
-            case COMANDO_BT_APAGADO:
-            {
-                apagarVentiladorBT(VENTILANDO_POR_BT);
-            }
-            break;
+            gasDetectado(VENTILANDO_POR_BT);
           }
           break;
+
+          case COMANDO_BT_APAGADO:
+          {
+            apagarVentiladorBT(VENTILANDO_POR_BT);
+          }
+          break;
+        }
+        break;
       }
       break;
     }
-
-  }
-    
+  }  
 }
-//-----------------------------------------------------
 
-//-----------------------------------------------------
+
 // Funciones del Sistema
 void tomar_evento()
 {
-
-    if(verificar_sensor_gas() || verificar_sensor_temperatura() || verificar_bt() )
-       return;    
+  if(verificar_sensor_gas() || verificar_sensor_temperatura() || verificar_bt() )
+    return;    
 }
 
 bool verificar_sensor_temperatura()
@@ -291,13 +280,13 @@ bool verificar_sensor_temperatura()
   
   if(sensor_temperatura.nivel > UMBRAL_TEMP )
   {
-      evento.tipo = TEMPERATURA_ALTA;
-      return true;
+    evento.tipo = TEMPERATURA_ALTA;
+    return true;
   }
   else
   {
-      evento.tipo = TEMPERATURA_NORMAL;
-   	  return false;
+    evento.tipo = TEMPERATURA_NORMAL;
+    return false;
   }
 }
 
@@ -309,164 +298,167 @@ bool verificar_sensor_gas()
   
   if(sensor_gas.nivel > UMBRAL_GAS )
   {
-      evento.tipo = GAS_DETECTADO;
-      return true;
+    evento.tipo = GAS_DETECTADO;
+    return true;
   }
   else
   {
-	  evento.tipo = GAS_NO_DETECTADO;
-	  return false;    
+    evento.tipo = GAS_NO_DETECTADO;
+    return false;    
   }
-
 }
 
 bool verificar_bt()
 {
-  if(BT.available())    // Si llega un dato por el puerto BT se envía al monitor serial
-  {
+ if(BT.available())    // Si llega un dato por el puerto BT
+ {
     char caracterLeido = BT.read();
-    if( caracterLeido == ENCENDER_VENTILADOR){ //si llega un e prendo el ventilador
-        Serial.println("PRENDIENDO MOTORES");
-        Serial.println("---------------------------------------------");
-        evento.tipo = COMANDO_BT_ENCENDIDO;
-    }else{
-      if( caracterLeido == APAGAR_VENTILADOR){ //si llega una a apago el ventilador
+    if( caracterLeido == ENCENDER_VENTILADOR)
+    { 
+      //si llega un e prendo el ventilador
+      Serial.println("PRENDIENDO MOTORES");
+      Serial.println("---------------------------------------------");
+      evento.tipo = COMANDO_BT_ENCENDIDO;
+    }
+    else
+    {
+      if( caracterLeido == APAGAR_VENTILADOR)
+      { //si llega una a apago el ventilador
         Serial.println("APAGANDO MOTORES");
         Serial.println("---------------------------------------------");
         evento.tipo = COMANDO_BT_APAGADO;
       }
     }
     return true;  
-  }else
+  }
+  else
   {
     return false;
   }
 }
 
 int leer_sensor_temperatura(int pin)
-{
+{ 
+ int sensor_value = analogRead(pin);
+ float voltage = sensor_value * (VOLTAJE_TEMPERATURA / MAX_ANALOG_VALUE);
   
-	int sensor_value = analogRead(pin);
-  	float voltage = sensor_value * (VOLTAJE_TEMPERATURA / MAX_ANALOG_VALUE);
-  
-  	// Convertir el voltaje a resistencia del termistor
-  	float resistance = (VOLTAJE_TEMPERATURA - voltage) * RESISTANCE_VALUE / voltage;
+ // Convertir el voltaje a resistencia del termistor
+ float resistance = (VOLTAJE_TEMPERATURA - voltage) * RESISTANCE_VALUE / voltage;
 
 
-  	// Calcular la temperatura usando la fórmula del termistor (simplificada) de Steinhart-Hart
-  	float temperatureC = CONSTANTE_INV_STEINHART_HART / (A + (B * log(resistance)) + (C * pow(log(resistance), 3))) - KELVIN_A_CELCIUS;
+ // Calcular la temperatura usando la fórmula del termistor (simplificada) de Steinhart-Hart
+ float temperatureC = CONSTANTE_INV_STEINHART_HART / (A + (B * log(resistance)) + (C * pow(log(resistance), 3))) - KELVIN_A_CELCIUS;
 
-    char temperaturaActual[20];
-    int tempActual = temperatureC;
-    sprintf(temperaturaActual,"%d",tempActual);
-    char mensajeAndroid[100];
-    snprintf(mensajeAndroid, sizeof(mensajeAndroid), "%d|%s", estado_actual, temperaturaActual);
-    BT.write(mensajeAndroid);
+ char temperaturaActual[20];
+ int tempActual = temperatureC;
+ sprintf(temperaturaActual,"%d",tempActual);
+ char mensajeAndroid[100];
+ snprintf(mensajeAndroid, sizeof(mensajeAndroid), "%d|%s", estado_actual, temperaturaActual);
+ BT.write(mensajeAndroid);
 
-  return temperatureC;
-  
+ return temperatureC; 
 }
 
 int leer_sensor_gas(int pin)
 {
-	return analogRead(pin); 
+ return analogRead(pin); 
 }
 
 void generarLogs(int estado_actual, int evento_actual, char* mensaje)
 {
-  	Serial.print("ACCION: "); Serial.println(mensaje);
-	Serial.print("ESTADO: "); Serial.println(estado_actual);
-	Serial.print("EVENTO: "); Serial.println(evento_actual);
-	Serial.println("---------------------------------------------");
+ Serial.print("ACCION: "); Serial.println(mensaje);
+ Serial.print("ESTADO: "); Serial.println(estado_actual);
+ Serial.print("EVENTO: "); Serial.println(evento_actual);
+ Serial.println("---------------------------------------------");
 }
 
 void actualizarEstado(int estado_nuevo)
 {
-	estado_actual = estado_nuevo;
+ estado_actual = estado_nuevo;
 }
 
 void encenderLed()
 {
-	digitalWrite(PIN_LED, HIGH);  
+ digitalWrite(PIN_LED, HIGH);  
 }
 
 void encenderVentilador()
 {
-	digitalWrite(PIN_VENTILADOR, HIGH);	  
+ digitalWrite(PIN_VENTILADOR, HIGH);	  
 }
 
 void apagarLed()
 {
-	digitalWrite(PIN_LED, LOW);  
+ digitalWrite(PIN_LED, LOW);  
 }
 
 void apagarVentilador()
 {
-	digitalWrite(PIN_VENTILADOR, LOW);	  
+ digitalWrite(PIN_VENTILADOR, LOW);	  
 }
 
 void gasDetectado(int estado_actual)
 {
-  actualizarEstado(ILUMINANDO_Y_VENTILANDO);
-  encenderLed();
-  encenderVentilador();
-  char mensaje[] = "Encendiendo Ventiladores y Led";
-  generarLogs(estado_actual, GAS_DETECTADO, mensaje);  
-  mandarMensajeAndroid();
+ actualizarEstado(ILUMINANDO_Y_VENTILANDO);
+ encenderLed();
+ encenderVentilador();
+ char mensaje[] = "Encendiendo Ventiladores y Led";
+ generarLogs(estado_actual, GAS_DETECTADO, mensaje);  
+ mandarMensajeAndroid();
 }
 
 void temperaturaAlta(int estado_actual)
 {
-  actualizarEstado(VENTILANDO);
-  encenderVentilador();
-  char mensaje[] = "Encendiendo Ventiladores";
-  generarLogs(estado_actual, TEMPERATURA_ALTA, mensaje);
-  mandarMensajeAndroid();
+ actualizarEstado(VENTILANDO);
+ encenderVentilador();
+ char mensaje[] = "Encendiendo Ventiladores";
+ generarLogs(estado_actual, TEMPERATURA_ALTA, mensaje);
+ mandarMensajeAndroid();
 }
 
 void encenderVentiladorBT(int estado_actual)
 {
-  actualizarEstado(VENTILANDO_POR_BT);
-  encenderVentilador();
-  char mensaje[] = "Encendiendo Ventiladores";
-  generarLogs(estado_actual, COMANDO_BT_ENCENDIDO, mensaje);
-  mandarMensajeAndroid();
+ actualizarEstado(VENTILANDO_POR_BT);
+ encenderVentilador();
+ char mensaje[] = "Encendiendo Ventiladores";
+ generarLogs(estado_actual, COMANDO_BT_ENCENDIDO, mensaje);
+ mandarMensajeAndroid();
 }
 
 void apagarVentiladorBT(int estado_actual)
 {
-  actualizarEstado(PREPARADO);
-  apagarVentilador();
-  char mensaje[] = "Apagando Ventiladores";
-  generarLogs(estado_actual, COMANDO_BT_APAGADO, mensaje);
-  mandarMensajeAndroid();
+ actualizarEstado(PREPARADO);
+ apagarVentilador();
+ char mensaje[] = "Apagando Ventiladores";
+ generarLogs(estado_actual, COMANDO_BT_APAGADO, mensaje);
+ mandarMensajeAndroid();
 }
 
 void gasNoDetectado(int estado_actual)
 {
-  actualizarEstado(DESENERGIZANDO_ACTUADORES);
-  apagarLed();
-  apagarVentilador();
-  char mensaje[] = "Apagando Actuadores";
-  generarLogs(estado_actual, GAS_NO_DETECTADO, mensaje);
-  mandarMensajeAndroid();
+ actualizarEstado(DESENERGIZANDO_ACTUADORES);
+ apagarLed();
+ apagarVentilador();
+ char mensaje[] = "Apagando Actuadores";
+ generarLogs(estado_actual, GAS_NO_DETECTADO, mensaje);
+ mandarMensajeAndroid();
 }
 
 void temperaturaNormal(int estado_actual)
 {
-  actualizarEstado(DESENERGIZANDO_VENTILADORES);
-  apagarVentilador();
-  char mensaje[] = "Apagando Ventiladores";
-  generarLogs(estado_actual, TEMPERATURA_NORMAL, mensaje);
-  mandarMensajeAndroid();
+ actualizarEstado(DESENERGIZANDO_VENTILADORES);
+ apagarVentilador();
+ char mensaje[] = "Apagando Ventiladores";
+ generarLogs(estado_actual, TEMPERATURA_NORMAL, mensaje);
+ mandarMensajeAndroid();
 }
 
-void mandarMensajeAndroid(){
-  char temperaturaActual[20];
-  int tempActual = leer_sensor_temperatura(sensor_temperatura.pin);
-  sprintf(temperaturaActual,"%d",tempActual);
-  char mensajeAndroid[100];
-  snprintf(mensajeAndroid, sizeof(mensajeAndroid), "%d|%s", estado_actual, temperaturaActual);
-  BT.write(mensajeAndroid);
+void mandarMensajeAndroid()
+{
+ char temperaturaActual[20];
+ int tempActual = leer_sensor_temperatura(sensor_temperatura.pin);
+ sprintf(temperaturaActual,"%d",tempActual);
+ char mensajeAndroid[100];
+ snprintf(mensajeAndroid, sizeof(mensajeAndroid), "%d|%s", estado_actual, temperaturaActual);
+ BT.write(mensajeAndroid);
 }
-//-----------------------------------------------------
