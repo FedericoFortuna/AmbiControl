@@ -5,7 +5,8 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-public class Permissions {
+public class Permissions 
+{
     private static Permissions instance;
     private String[] permissions;
 
@@ -18,7 +19,8 @@ public class Permissions {
         }
     }
 
-    public static synchronized Permissions getInstance() {
+    public static synchronized Permissions getInstance() 
+    {
         if (instance == null) 
         {
             instance = new Permissions();
