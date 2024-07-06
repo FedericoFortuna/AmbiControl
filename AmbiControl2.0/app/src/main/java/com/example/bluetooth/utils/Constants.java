@@ -1,6 +1,7 @@
 package com.example.bluetooth.utils;
 
-public class Constants {
+public class Constants 
+{
     public final static String TEXT_PREPARADO = "Preparado para comenzar";
     public final static String TEXT_ILUMINANDO_Y_VENTILANDO = "Led y ventiladores encendidos";
     public final static String TEXT_DESENERGIZANDO_ACTUADORES = "Apagando led y ventiladores";
