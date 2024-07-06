@@ -12,13 +12,15 @@ public class Permissions {
     private Permissions()
     {
         permissions = new String[9];
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) 
+        {
             configure();
         }
     }
 
     public static synchronized Permissions getInstance() {
-        if (instance == null) {
+        if (instance == null) 
+        {
             instance = new Permissions();
         }
         return instance;
