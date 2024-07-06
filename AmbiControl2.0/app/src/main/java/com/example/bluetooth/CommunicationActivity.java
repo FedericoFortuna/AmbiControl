@@ -196,7 +196,8 @@ public class CommunicationActivity extends Activity implements SensorEventListen
         notificationManager.notify(NOTIFICATION_ID, createNotification());
     }
 
-    private Notification createNotification(){
+    private Notification createNotification()
+    {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.pixelcut_export)
                 .setContentTitle(Constants.HIGH_GAS_ALERT_NOTIFICATION)
