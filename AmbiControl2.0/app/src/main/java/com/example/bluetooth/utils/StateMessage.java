@@ -14,7 +14,8 @@ public class StateMessage {
     }
 
     public static synchronized StateMessage getInstance() {
-        if (instance == null) {
+        if (instance == null) 
+        {
             instance = new StateMessage();
         }
         return instance;
