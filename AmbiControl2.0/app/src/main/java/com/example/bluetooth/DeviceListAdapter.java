@@ -22,27 +22,33 @@ public class DeviceListAdapter extends BaseAdapter
     private List<BluetoothDevice> mData;
     private OnPairButtonClickListener mListener;
 
-    public DeviceListAdapter(Context context) {
+    public DeviceListAdapter(Context context) 
+    {
         mInflater = LayoutInflater.from(context);
     }
 
-    public void setData(List<BluetoothDevice> data) {
+    public void setData(List<BluetoothDevice> data) 
+    {
         mData = data;
     }
 
-    public void setListener(OnPairButtonClickListener listener) {
+    public void setListener(OnPairButtonClickListener listener) 
+    {
         mListener = listener;
     }
 
-    public int getCount() {
+    public int getCount() 
+    {
         return (mData == null) ? 0 : mData.size();
     }
 
-    public Object getItem(int position) {
+    public Object getItem(int position) 
+    {
         return mData.get(position);
     }
 
-    public long getItemId(int position) {
+    public long getItemId(int position) 
+    {
         return position;
     }
 
